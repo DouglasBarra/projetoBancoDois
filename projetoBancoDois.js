@@ -30,7 +30,6 @@ async function initializeMongoDB() {
   try {
     await mongoClient.connect();
     mongoDb = mongoClient.db('testeMongo');
-    console.log('Conectado ao MongoDB');
   } catch (error) {
     console.error('Erro ao conectar ao MongoDB', error);
   }
