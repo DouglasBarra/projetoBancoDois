@@ -1,14 +1,17 @@
 # Inicio do projeto
 
-- instar o pacote NPM de cada banco (cada integrante colocar o seu)
+- Instalar o pacote NPM de cada banco
 
 Firebase: **npm install firebase**
-mongoDB: **?**
+mongoDB: **npm install ravendb**
 ravenDB: **?**
+
+- Inicar os bancos MongoDD e Raven pelo arquivo docker-compose:
+    - **Comando:** docker compose up -d
 
 # O que falta fazer
 
-- Inclusão das funções "Inserção", "Consulta" e "Atualização" para os bancos Mongo e Raven
+- Inclusão das funções "Inserção", "Consulta" e "Atualização" para os bancos Mongo
 - Testar cada uma das funcionalidades dentro do arquivo principal
 
 
