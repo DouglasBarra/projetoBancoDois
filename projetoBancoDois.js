@@ -1,9 +1,10 @@
 const { initializeApp } = require("firebase/app");
-const { getFirestore, collection, doc, writeBatch, getDocs, query, limit, updateDoc, getDoc } = require("firebase/firestore"); // Import getDoc
+const { getFirestore, collection, doc, writeBatch, getDocs, query, limit, updateDoc, getDoc } = require("firebase/firestore");
+const { DocumentStore } = require("ravendb")
 const fs = require('fs');
 const readline = require('readline');
 
-// Configuração do Firebase
+// Configuracao do Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyDM3K9KCv6KAVx3RoOK876HlC4RRlIQL1I",
     authDomain: "trabalhodebancodois.firebaseapp.com",
@@ -15,6 +16,13 @@ const firebaseConfig = {
 
 const firebaseApp = initializeApp(firebaseConfig);
 const firestore = getFirestore(firebaseApp);
+
+// Configuracao do RavenDB
+const store = new DocumentStore("http://localhost:8080", "testeRaven");
+store.initialize();
+
+// Configuracao do MongoDB
+
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -62,8 +70,7 @@ function showFirestoreMenu() {
   console.log('1. Inserir dados');
   console.log('2. Consultar dados');
   console.log('3. Atualizar dados');
-  console.log('4. Listar IDs dos documentos');
-  console.log('5. Voltar');
+  console.log('4. Voltar');
   rl.question('Escolha uma opção: ', (choiceFuncao) => {
     handleFirestoreChoice(choiceFuncao);
   });
@@ -91,16 +98,16 @@ function showMongoDBMenu() {
   });
 }
 
-// Funções para operações no Firestore
+// Funcoes para operacoes no Firestore
 async function insertDataFirestore() {
   console.log('Inserindo dados no Firestore...');
-  console.time('importDataTime'); // Inicia a contagem do tempo
+  console.time('importDataTime');
 
   const batch = writeBatch(firestore);
   const usersCollection = collection(firestore, 'users');
 
   data.forEach((item) => {
-    const docRef = doc(usersCollection); // Cria um novo documento com um ID único
+    const docRef = doc(usersCollection);
     batch.set(docRef, item);
   });
 
@@ -111,7 +118,7 @@ async function insertDataFirestore() {
     console.error('Erro ao inserir documentos: ', error);
   }
 
-  console.timeEnd('importDataTime'); // Finaliza a contagem do tempo e imprime o resultado no console
+  console.timeEnd('importDataTime'); 
   showFirestoreMenu();
 }
 
@@ -138,11 +145,11 @@ async function updateDataFirestore() {
     rl.question('Digite os novos dados (formato JSON): ', async (newDataStr) => {
       try {
         const newData = JSON.parse(newDataStr);
-        const docRef = doc(firestore, 'users', docId); // Use the doc function to get the reference to the document
-        const docSnapshot = await getDoc(docRef); // Verifica se o documento existe
+        const docRef = doc(firestore, 'users', docId); 
+        const docSnapshot = await getDoc(docRef); 
 
         if (docSnapshot.exists()) {
-          await updateDoc(docRef, newData); // Usar updateDoc para atualizar o documento
+          await updateDoc(docRef, newData); 
           console.log('Documento atualizado com sucesso!');
         } else {
           console.log('Documento não encontrado!');
@@ -155,36 +162,78 @@ async function updateDataFirestore() {
   });
 }
 
-// Funções para operações no RavenDB
-function insertDataRavenDB() {
+// Funcoes para operacoes no RavenDB
+async function insertDataRavenDB() {
   console.log('Inserindo dados no RavenDB...');
-  // Implementação específica para RavenDB
+
+  const session = store.openSession();
+
+  try {
+    for (const item of data) {
+      await session.store(item);
+    }
+    await session.saveChanges();
+    console.log('Todos os documentos foram inseridos com sucesso!');
+  } catch (error) {
+    console.error('Erro ao inserir documentos: ', error);
+  }
+
+  showRavenDBMenu();
 }
 
-function queryDataRavenDB() {
+async function queryDataRavenDB() {
   console.log('Consultando dados no RavenDB...');
-  // Implementação específica para RavenDB
+  const session = store.openSession();
+
+  try {
+    const testeRaven = await session.query({ collection: '@empty' }).take(50).all();
+    testeRaven.forEach(testeRaven => {
+      console.log(testeRaven);
+    });
+  } catch (error) {
+    console.error('Erro ao consultar documentos: ', error);
+  }
+  showRavenDBMenu();
 }
 
-function updateDataRavenDB() {
+async function updateDataRavenDB() {
   console.log('Atualizando dados no RavenDB...');
-  // Implementação específica para RavenDB
+  rl.question('Digite o ID do documento que deseja atualizar: ', async (docId) => {
+    rl.question('Digite os novos dados (formato JSON): ', async (newDataStr) => {
+      const session = store.openSession();
+      try {
+        const newData = JSON.parse(newDataStr);
+        const testeRaven = await session.load(docId);
+
+        if (testeRaven) {
+          Object.assign(testeRaven, newData);
+          await session.saveChanges(); 
+          console.log('Documento atualizado com sucesso!');
+        } else {
+          console.log('Documento não encontrado!');
+        }
+      } catch (error) {
+        console.error('Erro ao atualizar documento: ', error);
+      }
+      showRavenDBMenu();
+    });
+  });
 }
 
-// Funções para operações no MongoDB (exemplo: placeholders)
+// Funcoes para operacoes no MongoDB
 function insertDataMongoDB() {
   console.log('Inserindo dados no MongoDB...');
-  // Implementação específica para MongoDB
+  
 }
 
 function queryDataMongoDB() {
   console.log('Consultando dados no MongoDB...');
-  // Implementação específica para MongoDB
+  
 }
 
 function updateDataMongoDB() {
   console.log('Atualizando dados no MongoDB...');
-  // Implementação específica para MongoDB
+  
 }
 
 
