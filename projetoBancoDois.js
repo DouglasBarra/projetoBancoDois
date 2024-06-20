@@ -23,7 +23,7 @@ const store = new DocumentStore("http://localhost:8080", "testeRaven");
 store.initialize();
 
 // Configuracao do MongoDB
-const mongoClient = new MongoClient('mongodb://localhost:27017', { useNewUrlParser: true, useUnifiedTopology: true })
+const mongoClient = new MongoClient('mongodb://localhost:27017')
 let mongoDb;
 
 async function initializeMongoDB() {
@@ -354,3 +354,4 @@ function handleMongoDBChoice(choiceFuncao) {
 }
 
 showMainMenu();
+
