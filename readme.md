@@ -3,15 +3,17 @@
 - Instalar o pacote NPM de cada banco
 
 Firebase: **npm install firebase** 
-mongoDB: **npm install ravendb**
-ravenDB: **?** 
+mongoDB: **npm install mongodb**
+ravenDB: **npm install ravendb** 
 
-- Inicar os bancos MongoDD e Raven pelo arquivo docker-compose:
+- Inicar os bancos MongoDB e RavenDB pelo arquivo docker-compose:
     - **Comando:** docker compose up -d
+
+- O Firebase somente na nuvem, necessário logar na plataforma
 
 # O que falta fazer
 
-- Inclusão das funções "Inserção", "Consulta" e "Atualização" para os bancos Mongo
+- Inclusão das funções "Inserção", "Consulta" e "Atualização" para o bancos Mongo
 - Testar cada uma das funcionalidades dentro do arquivo principal
 
 

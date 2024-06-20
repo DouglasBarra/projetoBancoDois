@@ -1,8 +1,9 @@
-const { initializeApp } = require("firebase/app");
-const { getFirestore, collection, doc, writeBatch, getDocs, query, limit, updateDoc, getDoc } = require("firebase/firestore");
+const { initializeApp } = require("firebase/app")
+const { getFirestore, collection, doc, writeBatch, getDocs, query, limit, updateDoc, getDoc } = require("firebase/firestore")
 const { DocumentStore } = require("ravendb")
-const fs = require('fs');
-const readline = require('readline');
+const { MongoClient } = require('mongodb')
+const fs = require('fs')
+const readline = require('readline')
 
 // Configuracao do Firebase
 const firebaseConfig = {
@@ -22,7 +23,19 @@ const store = new DocumentStore("http://localhost:8080", "testeRaven");
 store.initialize();
 
 // Configuracao do MongoDB
+const mongoClient = new MongoClient('mongodb://localhost:27017', { useNewUrlParser: true, useUnifiedTopology: true })
+let mongoDb;
 
+async function initializeMongoDB() {
+  try {
+    await mongoClient.connect();
+    mongoDb = mongoClient.db('testeMongo');
+    console.log('Conectado ao MongoDB');
+  } catch (error) {
+    console.error('Erro ao conectar ao MongoDB', error);
+  }
+}
+initializeMongoDB();
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -104,10 +117,10 @@ async function insertDataFirestore() {
   console.time('importDataTime');
 
   const batch = writeBatch(firestore);
-  const usersCollection = collection(firestore, 'users');
+  const testeCollection = collection(firestore, 'testeFirebase');
 
   data.forEach((item) => {
-    const docRef = doc(usersCollection);
+    const docRef = doc(testeCollection);
     batch.set(docRef, item);
   });
 
@@ -221,21 +234,58 @@ async function updateDataRavenDB() {
 }
 
 // Funcoes para operacoes no MongoDB
-function insertDataMongoDB() {
+async function insertDataMongoDB() {
   console.log('Inserindo dados no MongoDB...');
   
+  try {
+    const collection = mongoDb.collection('testeMongo');
+    await collection.insertMany(data);
+    console.log('Todos os documentos foram inseridos com sucesso!');
+  } catch (error) {
+    console.error('Erro ao inserir documentos: ', error);
+  }
+  showMongoDBMenu();
 }
 
-function queryDataMongoDB() {
+async function queryDataMongoDB() {
   console.log('Consultando dados no MongoDB...');
   
-}
-
-function updateDataMongoDB() {
-  console.log('Atualizando dados no MongoDB...');
+  try {
+    const collection = mongoDb.collection('testeMongo');
+    const results = await collection.find({}).limit(50).toArray();
+    
+    results.forEach(doc => {
+      console.log(doc);
+    });
+  } catch (error) {
+    console.error('Erro ao consultar documentos: ', error);
+  }
   
+  showMongoDBMenu();
 }
 
+async function updateDataMongoDB() {
+  console.log('Atualizando dados no MongoDB...');
+  rl.question('Digite o ID do documento que deseja atualizar: ', async (docId) => {
+    rl.question('Digite os novos dados (formato JSON): ', async (newDataStr) => {
+      try {
+        const newData = JSON.parse(newDataStr);
+        const collection = mongoDb.collection('testeMongo');
+        
+        const result = await collection.updateOne({ _id: docId }, { $set: newData });
+        
+        if (result.matchedCount > 0) {
+          console.log('Documento atualizado com sucesso!');
+        } else {
+          console.log('Documento não encontrado!');
+        }
+      } catch (error) {
+        console.error('Erro ao atualizar documento: ', error);
+      }
+      showMongoDBMenu();
+    });
+  });
+}
 
 function handleFirestoreChoice(choiceFuncao) {
   switch (choiceFuncao) {

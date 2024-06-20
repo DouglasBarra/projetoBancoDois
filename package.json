@@ -2,6 +2,7 @@
   "dependencies": {
     "firebase": "^10.12.2",
     "firebase-admin": "^12.1.1",
+    "mongodb": "^6.7.0",
     "ravendb": "^5.4.2"
   }
 }
