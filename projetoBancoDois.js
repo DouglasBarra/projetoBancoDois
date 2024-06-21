@@ -137,8 +137,8 @@ async function insertDataFirestore() {
 async function queryDataFirestore() {
   console.log('Consultando dados no Firestore...');
   try { 
-      const usersCollection = collection(firestore, 'users');
-      const q = query(usersCollection, limit(50));
+      const usersCollection = collection(firestore, 'testeFirebase');
+      const q = query(testeCollection, limit(50));
       const querySnapshot = await getDocs(q);
 
       querySnapshot.forEach((doc) => {
@@ -157,7 +157,7 @@ async function updateDataFirestore() {
     rl.question('Digite os novos dados (formato JSON): ', async (newDataStr) => {
       try {
         const newData = JSON.parse(newDataStr);
-        const docRef = doc(firestore, 'users', docId); 
+        const docRef = doc(firestore, 'testeFirebase', docId); 
         const docSnapshot = await getDoc(docRef); 
 
         if (docSnapshot.exists()) {
