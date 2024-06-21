@@ -1,7 +1,7 @@
 const { initializeApp } = require("firebase/app")
 const { getFirestore, collection, doc, writeBatch, getDocs, query, limit, updateDoc, getDoc } = require("firebase/firestore")
 const { DocumentStore } = require("ravendb")
-const { MongoClient } = require('mongodb')
+const { MongoClient, ObjectId } = require('mongodb')
 const fs = require('fs')
 const readline = require('readline')
 
@@ -23,7 +23,7 @@ const store = new DocumentStore("http://localhost:8080", "testeRaven");
 store.initialize();
 
 // Configuracao do MongoDB
-const mongoClient = new MongoClient('mongodb://localhost:27017')
+const mongoClient = new MongoClient('mongodb://root:example@localhost:27017')
 let mongoDb;
 
 async function initializeMongoDB() {
@@ -137,7 +137,7 @@ async function insertDataFirestore() {
 async function queryDataFirestore() {
   console.log('Consultando dados no Firestore...');
   try { 
-      const usersCollection = collection(firestore, 'testeFirebase');
+      const testeCollection = collection(firestore, 'testeFirebase');
       const q = query(testeCollection, limit(50));
       const querySnapshot = await getDocs(q);
 
@@ -265,23 +265,28 @@ async function queryDataMongoDB() {
 
 async function updateDataMongoDB() {
   console.log('Atualizando dados no MongoDB...');
-  rl.question('Digite o ID do documento que deseja atualizar: ', async (docId) => {
-    rl.question('Digite os novos dados (formato JSON): ', async (newDataStr) => {
+
+  rl.question('Digite o ID do documento que deseja atualizar: ', async (id) => {
+    rl.question('Digite os novos dados (formato JSON): ', async (newData) => {
       try {
-        const newData = JSON.parse(newDataStr);
         const collection = mongoDb.collection('testeMongo');
-        
-        const result = await collection.updateOne({ _id: docId }, { $set: newData });
-        
-        if (result.matchedCount > 0) {
-          console.log('Documento atualizado com sucesso!');
-        } else {
+        const objectId = new ObjectId(id.trim());
+        const dataToUpdate = JSON.parse(newData);
+
+        const result = await collection.updateOne({ _id: objectId }, { $set: dataToUpdate });
+
+        if (result.matchedCount === 0) {
           console.log('Documento não encontrado!');
+        } else if (result.modifiedCount === 0) {
+          console.log('Documento encontrado, mas não foi atualizado.');
+        } else {
+          console.log('Documento atualizado com sucesso!');
         }
       } catch (error) {
         console.error('Erro ao atualizar documento: ', error);
+      } finally {
+        rl.close();
       }
-      showMongoDBMenu();
     });
   });
 }
@@ -298,9 +303,6 @@ function handleFirestoreChoice(choiceFuncao) {
       updateDataFirestore();
       break;
     case '4':
-      listDocumentIDs();
-      break;
-    case '5':
       showMainMenu();
       break;
     default:

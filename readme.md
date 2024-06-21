@@ -11,12 +11,6 @@ ravenDB: **npm install ravendb**
 
 - O Firebase somente na nuvem, necessário logar na plataforma
 
-# O que falta fazer
-
-- Inclusão das funções "Inserção", "Consulta" e "Atualização" para o bancos Mongo
-- Testar cada uma das funcionalidades dentro do arquivo principal
-
-
 # Exemplos de inserção
 
 - Para cada banco um ID diferente. Para saber o ID de um registro no banco utilizar a opção de consulta de dados. Para o Firebase o ID é o primeiro registro do documento, para o RavenDB é o ultimo registro do documento.
