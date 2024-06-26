@@ -181,11 +181,16 @@ async function insertDataRavenDB() {
   const session = store.openSession();
 
   try {
+    const startTime = Date.now();
+
     for (const item of data) {
       await session.store(item);
     }
     await session.saveChanges();
-    console.log('Todos os documentos foram inseridos com sucesso!');
+
+    const endTime = Date.now();
+    const duration = endTime - startTime;
+    console.log(`Todos os documentos foram inseridos com sucesso em ${duration}ms!`);
   } catch (error) {
     console.error('Erro ao inserir documentos: ', error);
   }
@@ -238,8 +243,15 @@ async function insertDataMongoDB() {
   
   try {
     const collection = mongoDb.collection('testeMongo');
+    
+    const startTime = Date.now();
+
     await collection.insertMany(data);
-    console.log('Todos os documentos foram inseridos com sucesso!');
+
+    const endTime = Date.now();
+    const duration = endTime - startTime;
+
+    console.log(`Todos os documentos foram inseridos em ${duration}ms com sucesso!`);
   } catch (error) {
     console.error('Erro ao inserir documentos: ', error);
   }
